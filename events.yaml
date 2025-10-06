@@ -1,18 +1,18 @@
 # Events Configuration
 current_events:
   - title: "Kickoff Session"
-    date: "TBA"
+    date: "10 October 2025, Friday Meet(1st Hour)"
     description: "First official meet. Introductions, club vision, and initial project brainstorming. Bring your laptops and ideas."
-    location: "Lab"
+    location: "TBD"
     duration: "1 hour"
     border_color: "amber"
     #signup_url: "https://forms.gle/kickoff-signup"
     instructions_url: "https://blog.neotechclub.qzz.io/p/kickoff-session-first-official-meet-instructions/"
   
   - title: "Git Workshop 1 - Intro to Git with Github and Codeberg"
-    date: "TBA"
+    date: "10 October 2025, Friday Meet(2nd Hour)"
     description: "Version control essentials. From clone to commits, we'll cover collaborative development workflows."
-    location: "Lab"
+    location: "TBD"
     duration: "1 hour"
     border_color: "cyan"
     #signup_url: "https://forms.gle/git-signup"
