@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Events - NeoTech Club @ GCC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        terminal: {
+                            green: '#00ff41',
+                            black: '#0a0e0f',
+                            charcoal: '#282a36',
+                            gray: '#44475a',
+                            amber: '#ffb86c',
+                            cyan: '#8be9fd',
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        * {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background: #0a0e0f;
+            color: #00ff41;
+        }
+
+        /* Matrix background effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(transparent 50%, rgba(0, 255, 65, 0.05) 50%);
+            background-size: 2px 4px;
+            animation: matrix-scroll 20s linear infinite;
+        }
+
+        @keyframes matrix-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+
+        /* Terminal window aesthetic */
+        .terminal-card {
+            background: rgba(40, 42, 54, 0.95);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-card::before {
+            content: '● ● ●';
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            font-size: 8px;
+            color: #44475a;
+            letter-spacing: 4px;
+        }
+
+        .terminal-header {
+            height: 36px;
+            background: rgba(68, 71, 90, 0.5);
+            border-bottom: 1px solid #00ff41;
+            display: flex;
+            align-items: center;
+            padding-left: 60px;
+            font-size: 12px;
+            color: #8be9fd;
+        }
+
+        /* Event card hover effect */
+        .event-card {
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(0, 255, 65, 0.2);
+        }
+
+        /* Button styling */
+        .btn-terminal {
+            background: transparent;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 12px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 65, 0.1);
+            transition: left 0.3s ease;
+        }
+
+        .btn-terminal:hover::before {
+            left: 0;
+        }
+
+        .btn-terminal:hover {
+            color: #ffb86c;
+            border-color: #ffb86c;
+            box-shadow: 0 0 15px rgba(255, 184, 108, 0.3);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- Matrix background effect -->
+    <div class="matrix-bg"></div>
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full bg-terminal-black/95 border-b border-terminal-green z-50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-terminal-green font-bold text-lg md:text-xl">$</span>
+                <span class="text-terminal-green font-bold text-sm md:text-base">NeoTech Club</span>
+            </div>
+            <a href="/" class="text-terminal-cyan hover:text-terminal-amber transition-colors text-sm">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Past Events Section -->
+    <section class="relative min-h-screen px-6 pt-24 pb-12">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/past_events.yaml
+                </div>
+                <div class="p-8">
+                    <h1 class="text-3xl font-bold text-terminal-amber mb-4">
+                        <span class="text-terminal-green">$</span> Past Events
+                    </h1>
+                    <p class="text-terminal-cyan text-sm mb-8">
+                        A chronicle of our journey. Every workshop, meetup, and hackathon that shaped our community.
+                    </p>
+                    
+                    <div class="space-y-4" id="pastEventsContainer">
+                        <!-- Past events loaded dynamically from events.json -->
+                        <div class="text-center text-terminal-gray text-sm py-8">
+                            <i class="bi bi-hourglass-split"></i> Loading past events...
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-8 pt-6 border-t border-terminal-gray">
+                        <a href="/" class="btn-terminal">
+                            <span class="relative z-10"><i class="bi bi-house"></i> Back to Home</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Load and display past events from JSON
+        // Events are already sorted newest first by build.py
+        async function loadPastEvents() {
+            const container = document.getElementById('pastEventsContainer');
+            
+            try {
+                const response = await fetch('/events.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load events');
+                }
+                
+                const data = await response.json();
+                
+                if (data.past_events && data.past_events.length > 0) {
+                    // Events are already sorted by build.py (newest first)
+                    container.innerHTML = data.past_events.map(event => `
+                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-gray">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-terminal-green">${event.title}</h3>
+                                <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">${event.date}</span>
+                            </div>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                ${event.description}
+                            </p>
+                            <div class="flex gap-4 text-xs text-terminal-gray">
+                                <span><i class="bi bi-geo-alt"></i> ${event.location || 'TBA'}</span>
+                                ${event.duration ? `<span><i class="bi bi-clock"></i> ${event.duration}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('') + `
+                        <div class="text-center pt-6 text-terminal-gray text-sm">
+                            More events will appear here as we continue building and learning together.
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center text-terminal-gray text-sm py-8">
+                            <i class="bi bi-inbox"></i> No past events yet. Check back soon!
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Failed to load past events:', e);
+                container.innerHTML = `
+                    <div class="text-center text-terminal-amber text-sm py-8">
+                        <i class="bi bi-exclamation-triangle"></i> Failed to load events. Please refresh the page.
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPastEvents();
+        });
+    </script>
+</body>
+</html>

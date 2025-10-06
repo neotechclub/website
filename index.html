@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoTech Club @ GCC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        terminal: {
+                            green: '#00ff41',
+                            black: '#0a0e0f',
+                            charcoal: '#282a36',
+                            gray: '#44475a',
+                            amber: '#ffb86c',
+                            cyan: '#8be9fd',
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        * {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background: #0a0e0f;
+            color: #00ff41;
+        }
+
+        /* Subtle matrix rain effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(transparent 50%, rgba(0, 255, 65, 0.05) 50%);
+            background-size: 2px 4px;
+            animation: matrix-scroll 20s linear infinite;
+        }
+
+        @keyframes matrix-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+
+        /* Terminal window aesthetic */
+        .terminal-card {
+            background: rgba(40, 42, 54, 0.95);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-card::before {
+            content: '● ● ●';
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            font-size: 8px;
+            color: #44475a;
+            letter-spacing: 4px;
+        }
+
+        .terminal-header {
+            height: 36px;
+            background: rgba(68, 71, 90, 0.5);
+            border-bottom: 1px solid #00ff41;
+            display: flex;
+            align-items: center;
+            padding-left: 60px;
+            font-size: 12px;
+            color: #8be9fd;
+        }
+
+        /* Animated cursor */
+        .cursor-blink {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #00ff41;
+            animation: blink 1s infinite;
+            margin-left: 4px;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        /* Slow pulse animation for join button */
+        @keyframes pulse-slow {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.95;
+                transform: scale(1.01);
+            }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2.5s ease-in-out infinite;
+        }
+
+        /* Glowing text effect */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        /* ASCII border decorations */
+        .ascii-border-top::before {
+            content: '┌─────────────────────────────────────────────────┐';
+            display: block;
+            color: #44475a;
+            font-size: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ascii-border-bottom::after {
+            content: '└─────────────────────────────────────────────────┘';
+            display: block;
+            color: #44475a;
+            font-size: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Link styling */
+        a {
+            color: #8be9fd;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        a:hover,
+        a:active,
+        a:focus {
+            color: #ffb86c;
+        }
+
+        a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #ffb86c;
+            transition: width 0.3s ease;
+        }
+
+        a:hover::after,
+        a:active::after,
+        a:focus::after {
+            width: 100%;
+        }
+
+        /* Make tap feedback more visible on mobile */
+        @media (hover: none) and (pointer: coarse) {
+            a:active {
+                color: #ffb86c;
+                transform: scale(1.05);
+            }
+            
+            a:active::after {
+                width: 100%;
+            }
+        }
+
+        /* Button styling */
+        .btn-terminal,
+        button {
+            background: transparent;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 12px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button.terminal-card {
+            border: 1px solid #00ff41;
+        }
+
+        .btn-terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 65, 0.1);
+            transition: left 0.3s ease;
+        }
+
+        .btn-terminal:hover::before {
+            left: 0;
+        }
+
+        .btn-terminal:hover {
+            color: #ffb86c;
+            border-color: #ffb86c;
+            box-shadow: 0 0 15px rgba(255, 184, 108, 0.3);
+        }
+
+        /* Event card hover effect */
+        .event-card {
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(0, 255, 65, 0.2);
+        }
+
+        /* Schedule timeline */
+        .timeline-item::before {
+            content: '▶';
+            position: absolute;
+            left: -20px;
+            color: #00ff41;
+            font-size: 10px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(10, 14, 15, 0.95);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 0;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #00ff41;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+        }
+
+        .modal-close:hover {
+            color: #ffb86c;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            white-space: nowrap;
+        }
+
+        /* Special styling for join link in nav */
+        .nav-join-special {
+            background: linear-gradient(135deg, rgba(255, 184, 108, 0.15), rgba(255, 184, 108, 0.05));
+            padding: 0.0125rem 0.4rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 184, 108, 0.4);
+            box-shadow: 0 0 10px rgba(255, 184, 108, 0.2);
+            font-weight: 500;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .nav-join-special:hover {
+            background: linear-gradient(135deg, rgba(255, 184, 108, 0.25), rgba(255, 184, 108, 0.1));
+            border-color: rgba(255, 184, 108, 0.6);
+            box-shadow: 0 0 15px rgba(255, 184, 108, 0.4);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 184, 108, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(255, 184, 108, 0.35);
+            }
+        }
+
+        /* Responsive text sizing */
+        @media (max-width: 768px) {
+            .hero-text {
+                font-size: 2rem;
+            }
+            
+            nav .max-w-7xl {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .nav-links {
+                gap: 0.75rem;
+                font-size: 11px;
+                justify-content: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- Matrix background effect -->
+    <div class="matrix-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-terminal-black/95 border-b border-terminal-green z-50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-terminal-green font-bold text-lg md:text-xl">$</span>
+                <span class="text-terminal-green font-bold text-sm md:text-base">NeoTech Club</span>
+                <span class="cursor-blink" style="width: 8px; height: 16px;"></span>
+            </div>
+            <div class="nav-links text-sm">
+                <a href="#about">about</a>
+                <a href="#join" class="nav-join-special">join</a>
+                <a href="#schedule">schedule</a>
+                <a href="#events">events</a>
+                <a href="#blog">blog</a>
+                <a href="#contact">contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center px-6 pt-20">
+        <div class="max-w-5xl mx-auto text-center z-10">
+            <div class="mb-8">
+                <pre class="text-terminal-cyan text-xs opacity-70 inline-block">
+ _   _            _____         _     
+| \ | | ___  ___ |_   _|__  ___| |__  
+|  \| |/ _ \/ _ \  | |/ _ \/ __| '_ \ 
+| |\  |  __/ (_) | | |  __/ (__| | | |
+|_| \_|\___|\___/  |_|\___|\___|_| |_|
+                </pre>
+            </div>
+            <h1 class="hero-text text-5xl md:text-7xl font-bold mb-6 glow-text">
+                Build. Break. Learn.
+            </h1>
+            <p class="text-xl text-terminal-cyan mb-8 max-w-2xl mx-auto">
+                Beginner Friendly programming club at GCC. <br>
+                We turn caffeine into code and curiosity into projects.
+            </p>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <a href="#join" class="btn-terminal ring-2 ring-terminal-amber shadow-[0_0_20px_rgba(255,184,108,0.4)] hover:shadow-[0_0_30px_rgba(255,184,108,0.6)] animate-pulse-slow">
+                    <span class="relative z-10"><i class="bi bi-person-plus"></i> Join the Club ✨</span>
+                </a>
+                <a href="#events" class="btn-terminal block">
+                    <span class="relative z-10"><i class="bi bi-calendar-event"></i> Upcoming Events</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/about_us.md
+                </div>
+                <div class="p-8 space-y-6">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-6">
+                        <span class="text-terminal-green">$</span> cat about.md
+                    </h2>
+                    
+                    <div class="space-y-4 text-terminal-cyan leading-relaxed">
+                        <p class="text-lg">
+                            We're a community of students who believe college should be more than just lectures and attendance sheets. It's a place to experiment, build cool stuff, and learn by breaking things.
+                        </p>
+                        
+                        <p>
+                            Every week, we meet to discuss technology, work on projects, and explore everything from web development to cybersecurity. Think of it as your escape from the monotony: a creative outlet where you can apply classroom theory to real-world problems.
+                        </p>
+
+                        <div class="border-l-2 border-terminal-green pl-4 my-6 italic text-terminal-green/80">
+                            "The best way to learn is to build something you care about, break it repeatedly, and fix it until it works."
+                        </div>
+
+                        <p>
+                            We're not just about coding. We're about creating a culture where curiosity is encouraged, where late-night debugging sessions turn into friendships, and where the lab becomes your second home.
+                        </p>
+
+                        <div class="mt-8 pt-6 border-t border-terminal-gray">
+                            <h3 class="text-xl font-bold text-terminal-green mb-4">What We Do:</h3>
+                            <ul class="space-y-2 text-terminal-cyan">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-terminal-amber">▸</span>
+                                    <span>Regular tech discussions and rapid-fire learning sessions</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-terminal-amber">▸</span>
+                                    <span>Hands-on projects in open source development</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-terminal-amber">▸</span>
+                                    <span>Cybersecurity workshops and CTF challenges</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-terminal-amber">▸</span>
+                                    <span>Regular excursions and tech events</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-terminal-amber">▸</span>
+                                    <span>System administration and infrastructure learning</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Join Section -->
+    <section id="join" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/join_us.md
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Join NeoTech Club
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-cyan">
+                            <h3 class="text-xl font-bold text-terminal-cyan mb-3 flex items-center gap-2">
+                                <i class="bi bi-hourglass-split"></i> Temporary Member
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Try out the club, join activities, and see if it fits you. No commitment required. Perfect for exploring what we're about.
+                            </p>
+                            <ul class="text-xs text-terminal-gray space-y-1">
+                                <li><i class="bi bi-check2"></i> Attend all events</li>
+                                <li><i class="bi bi-check2"></i> Access to resources</li>
+                                <li><i class="bi bi-check2"></i> Community chat</li>
+                            </ul>
+                        </div>
+
+                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-amber">
+                            <h3 class="text-xl font-bold text-terminal-amber mb-3 flex items-center gap-2">
+                                <i class="bi bi-person-badge"></i> Member
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Become a full member, participate in projects, help shape the club's direction, and contribute to our community.
+                            </p>
+                            <ul class="text-xs text-terminal-gray space-y-1">
+                                <li><i class="bi bi-check2"></i> All temporary benefits</li>
+                                <li><i class="bi bi-check2"></i> Project voting rights</li>
+                                <li><i class="bi bi-check2"></i> Leadership opportunities</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-terminal-gray pt-6">
+                        <a href="https://forms.gle/your-google-form" target="_blank" class="btn-terminal inline-block mb-3">
+                            <span class="relative z-10"><i class="bi bi-google"></i> Join via Google Forms</span>
+                        </a>
+                        <p class="text-xs text-terminal-gray italic">
+                            <i class="bi bi-info-circle"></i> We apologize for using Google Forms. If you're trying to degoogle or prefer alternative methods, 
+                            please <a href="#contact" class="text-terminal-cyan underline">contact us directly</a> and we'll help you join!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Section -->
+    <section id="schedule" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/weekly_schedule.yaml
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Weekly Rhythm
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-6" id="scheduleContainer">
+                        <!-- Schedule loaded dynamically from schedule.json -->
+                        <div class="text-center text-terminal-gray text-sm py-8 col-span-3">
+                            <i class="bi bi-hourglass-split"></i> Loading schedule...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upcoming Events -->
+    <section id="events" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/upcoming_events.yaml
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Current Events
+                    </h2>
+                    
+                    <div class="space-y-4" id="currentEventsContainer">
+                        <!-- Sample event - would be loaded from upcoming.yaml -->
+                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-amber">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-terminal-green">Kickoff Session</h3>
+                                <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">TBA</span>
+                            </div>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                First official meet. Introductions, club vision, and initial project brainstorming. Bring your laptops and ideas.
+                            </p>
+                            <div class="flex gap-4 text-xs text-terminal-gray mb-3">
+                                <span><i class="bi bi-geo-alt"></i> Lab</span>
+                                <span><i class="bi bi-clock"></i> 1 hour</span>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <a href="https://forms.gle/kickoff-signup" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-box-arrow-up-right"></i> Signup
+                                </a>
+                                <a href="/kickoff-instructions.pdf" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-file-text"></i> Instructions
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-cyan">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-xl font-bold text-terminal-green">Git Workshop</h3>
+                                <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">TBA</span>
+                            </div>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Version control essentials. From clone to pull request, we'll cover collaborative development workflows.
+                            </p>
+                            <div class="flex gap-4 text-xs text-terminal-gray mb-3">
+                                <span><i class="bi bi-geo-alt"></i> Lab</span>
+                                <span><i class="bi bi-clock"></i> 1.5 hours</span>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <a href="https://forms.gle/git-signup" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-box-arrow-up-right"></i> Signup
+                                </a>
+                                <a href="/git-workshop-guide.pdf" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-file-text"></i> Instructions
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="text-center pt-6 border-t border-terminal-gray mt-8">
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                More events will be added soon. Stay tuned!
+                            </p>
+                            <a href="/past-events.html" class="btn-terminal inline-block">
+                                <span class="relative z-10"><i class="bi bi-clock-history"></i> View Past Events</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/blog.md
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Our Blog
+                    </h2>
+                    
+                    <div class="text-terminal-cyan mb-8">
+                        <p class="text-lg mb-4">
+                            We maintain a blog where we share tutorials, project writeups, security insights, and our journey building this community.
+                        </p>
+                        <p class="text-sm text-terminal-gray">
+                            From beginner-friendly guides to club related updates, our blog is where we document what we learn and share it with the world.
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <a href="/blog" target="_blank" class="terminal-card p-6 event-card border-l-4 border-terminal-green hover:border-terminal-amber transition-colors">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-globe2 text-3xl text-terminal-green"></i>
+                                <div>
+                                    <h3 class="font-bold text-terminal-green mb-1">Open on Web</h3>
+                                    <p class="text-xs text-terminal-gray">Read our latest posts</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <button id="copyRSSBtn" class="terminal-card p-6 event-card border-l-4 border-terminal-amber hover:border-terminal-green transition-colors text-left w-full cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-rss-fill text-3xl text-terminal-amber"></i>
+                                <div>
+                                    <h3 class="font-bold text-terminal-amber mb-1">Copy RSS Link</h3>
+                                    <p class="text-xs" id="rssStatus">Click to copy feed URL</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/contact.json
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Get in Touch
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-bold text-terminal-green mb-4 flex items-center gap-2">
+                                <i class="bi bi-chat-dots"></i> XMPP
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Decentralized instant messaging. Perfect for privacy-conscious members.
+                            </p>
+                            <a href="xmpp:neotech@xmpp.jp" class="inline-flex items-center gap-2 text-terminal-amber hover:text-terminal-cyan transition-colors">
+                                neotech@xmpp.jp <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold text-terminal-green mb-4 flex items-center gap-2">
+                                <i class="bi bi-whatsapp"></i> WhatsApp
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Prefer WhatsApp? Connect with us there too.
+                            </p>
+                            <a href="https://wa.me/1234567890" target="_blank" class="inline-flex items-center gap-2 text-terminal-amber hover:text-terminal-cyan transition-colors">
+                                Chat Now <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold text-terminal-green mb-4 flex items-center gap-2">
+                                <i class="bi bi-envelope-at"></i> Email
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                For official inquiries, collaboration proposals, or if you prefer async communication.
+                            </p>
+                            <a href="mailto:neotechclub@proton.me" class="inline-flex items-center gap-2 text-terminal-amber hover:text-terminal-cyan transition-colors">
+                                neotechclub@proton.me <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold text-terminal-green mb-4 flex items-center gap-2">
+                                <i class="bi bi-geo-alt"></i> In Person
+                            </h3>
+                            <p class="text-terminal-cyan text-sm mb-4">
+                                Find us in the lab during meet times. Drop by, say hi, see what we're working on.
+                            </p>
+                            <span class="inline-flex items-center gap-2 text-terminal-gray">
+                                <i class="bi bi-building"></i> Computer Lab, GCC
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative py-12 px-6 border-t border-terminal-gray">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-terminal-green">$</span>
+                    <span class="text-terminal-cyan text-sm">NeoTech Club @ GCC</span>
+                </div>
+                <div class="text-terminal-gray text-xs">
+                    Built with <span class="text-terminal-amber">❤</span> and late-night caffeine
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, setting up RSS copy button...');
+            
+            // Copy RSS link
+            const copyRSSBtn = document.getElementById('copyRSSBtn');
+            const rssStatus = document.getElementById('rssStatus');
+            
+            console.log('copyRSSBtn:', copyRSSBtn);
+            console.log('rssStatus:', rssStatus);
+            
+            if (copyRSSBtn && rssStatus) {
+                console.log('Adding click listener to RSS button');
+                
+                copyRSSBtn.addEventListener('click', async (e) => {
+                    console.log('RSS button clicked!');
+                    e.preventDefault();
+                    const rssUrl = 'https://neotechclub.qzz.io/blog/post/index.xml';
+                    let success = false;
+                    try {
+                        await navigator.clipboard.writeText(rssUrl);
+                        success = true;
+                    } catch (err) {
+                        console.error('Copy failed:', err);
+                    }
+                    if (success) {
+                        rssStatus.textContent = '✓ RSS link copied!';
+                        rssStatus.className = 'text-xs text-terminal-green';
+                    } else {
+                        // fallback: show the URL and select it for manual copy
+                        rssStatus.textContent = 'Copy failed. Tap to copy: ' + rssUrl;
+                        rssStatus.className = 'text-xs text-terminal-amber';
+                    }
+                    setTimeout(() => {
+                        rssStatus.textContent = 'Click to copy feed URL';
+                        rssStatus.className = 'text-xs';
+                    }, 2500);
+                });
+            } else {
+                console.error('RSS button or status element not found!');
+            }
+            
+            // Load events and schedule
+            loadEvents();
+            loadSchedule();
+        });
+
+        // Load events from JSON (generated at build time from YAML)
+        // Only show latest 3 current events at runtime
+        async function loadEvents() {
+            try {
+                const response = await fetch('/events.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.current_events && data.current_events.length > 0) {
+                        // Show only the latest 3 events
+                        const latest3 = data.current_events.slice(0, 3);
+                        const container = document.getElementById('currentEventsContainer');
+                        
+                        // Render events dynamically
+                        const eventsHTML = latest3.map(event => {
+                            const linksHTML = [];
+                            if (event.signup_url) {
+                                linksHTML.push(`<a href="${event.signup_url}" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-box-arrow-up-right"></i> Signup
+                                </a>`);
+                            }
+                            if (event.instructions_url) {
+                                linksHTML.push(`<a href="${event.instructions_url}" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                    <i class="bi bi-file-text"></i> Instructions
+                                </a>`);
+                            }
+                            
+                            return `
+                                <div class="terminal-card p-6 event-card border-l-4" style="border-color: ${event.border_color || '#ffb86c'}">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="text-xl font-bold text-terminal-green">${event.title}</h3>
+                                        <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">${event.date || 'TBA'}</span>
+                                    </div>
+                                    <p class="text-terminal-cyan text-sm mb-4">
+                                        ${event.description}
+                                    </p>
+                                    <div class="flex gap-4 text-xs text-terminal-gray mb-3">
+                                        <span><i class="bi bi-geo-alt"></i> ${event.location || 'TBA'}</span>
+                                        ${event.duration ? `<span><i class="bi bi-clock"></i> ${event.duration}</span>` : ''}
+                                    </div>
+                                    ${linksHTML.length > 0 ? `<div class="flex gap-2 flex-wrap">${linksHTML.join('')}</div>` : ''}
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Add "more events" message and past events link
+                        container.innerHTML = eventsHTML + `
+                            <div class="text-center pt-6 border-t border-terminal-gray mt-8">
+                                <p class="text-terminal-cyan text-sm mb-4">
+                                    More events will be added soon. Stay tuned!
+                                </p>
+                                <a href="/past-events.html" class="btn-terminal inline-block">
+                                    <span class="relative z-10"><i class="bi bi-clock-history"></i> View Past Events</span>
+                                </a>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.log('Events JSON not found, using static content');
+            }
+        }
+
+        // Load schedule from JSON (generated at build time from YAML)
+        async function loadSchedule() {
+            try {
+                const response = await fetch('/schedule.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load schedule');
+                }
+                
+                const data = await response.json();
+                const container = document.getElementById('scheduleContainer');
+                
+                if (data.schedule && data.schedule.length > 0) {
+                    container.innerHTML = data.schedule.map((item, index) => {
+                        const activitiesHTML = item.activities.map(activity => `
+                            <div class="relative pl-5 timeline-item">
+                                ${activity.duration ? `<span class="text-terminal-amber">${activity.duration}</span> - ` : ''}${activity.description}
+                            </div>
+                        `).join('');
+                        
+                        return `
+                            <div class="terminal-card p-6 event-card">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="text-terminal-amber text-2xl">${String(index + 1).padStart(2, '0')}</span>
+                                    <h3 class="text-xl font-bold text-terminal-green">${item.title}</h3>
+                                </div>
+                                <div class="space-y-3 text-sm text-terminal-cyan">
+                                    ${activitiesHTML}
+                                </div>
+                                ${item.frequency ? `<div class="mt-4 text-xs text-terminal-gray">${item.frequency}</div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center text-terminal-gray text-sm py-8 col-span-3">
+                            <i class="bi bi-inbox"></i> No schedule items yet.
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Failed to load schedule:', e);
+                const container = document.getElementById('scheduleContainer');
+                container.innerHTML = `
+                    <div class="text-center text-terminal-amber text-sm py-8 col-span-3">
+                        <i class="bi bi-exclamation-triangle"></i> Failed to load schedule.
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

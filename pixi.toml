@@ -1,0 +1,14 @@
+[workspace]
+authors = ["SoundDrill31 <84176052+sounddrill31@users.noreply.github.com>"]
+channels = ["conda-forge"]
+name = "website"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+dev = "python build.py && python -m http.server 8080 -d out/"
+build = "python build.py"
+
+[dependencies]
+pyyaml = ">=6.0.3,<7"
+python = ">=3.13.7,<3.14"

@@ -1,0 +1,14 @@
+# Files and directories to exclude from build
+exclude:
+  - "*.yaml"
+  - "*.yml"
+  - "build.py"
+  - "README.md"
+  - ".git"
+  - ".gitignore"
+  - "donotbuild.yaml"
+  - "node_modules"
+  - "*.pyc"
+  - "__pycache__"
+  - "*.md"
+  - "pixi.*"

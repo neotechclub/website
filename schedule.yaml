@@ -1,0 +1,29 @@
+# Weekly Schedule
+schedule:
+  - title: "Normal Activities"
+    frequency: "Twice weekly"
+    activities:
+      - duration: "15 min"
+        description: "Club planning"
+      - duration: "15 min"
+        description: "Tech news discussion"
+      - duration: "30 min"
+        description: "Open exploration"
+  
+#  - title: "Security Day"
+#    frequency: "Weekly special"
+#    activities:
+#      - duration: "30 min"
+#        description: "Security deep dive"
+#      - duration: "15 min"
+#        description: "Club sync"
+#      - duration: "15 min"
+#        description: "Event planning"
+#  
+#  - title: "Excursions"
+#    frequency: "Monthly/bimonthly"
+#    activities:
+#      - description: "Tech meetups"
+#      - description: "Conference visits"
+#      - description: "Hackathons"
+#

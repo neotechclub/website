@@ -205,3 +205,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# NeoTech Club Website Build Output
+out/
+
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# VSCode stuff
+.vscode/*
