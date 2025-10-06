@@ -11,7 +11,7 @@ current_events:
   
   - title: "Git Workshop 1 - Intro to Git with Github and Codeberg"
     date: "10 October 2025, Friday Meet(2nd Hour)"
-    description: "Version control essentials. From clone to commits, we'll cover collaborative development workflows."
+    description: "Version control essentials. From clone to commits, we'll cover collaborative development workflows. Bring your laptops and ideas."
     location: "TBD"
     duration: "1 hour"
     border_color: "cyan"
