@@ -782,7 +782,7 @@
                 copyRSSBtn.addEventListener('click', async (e) => {
                     console.log('RSS button clicked!');
                     e.preventDefault();
-                    const rssUrl = 'https://neotechclub.qzz.io/blog/post/index.xml';
+                    const rssUrl = 'https://blog.neotechclub.qzz.io/post/index.xml';
                     let success = false;
                     try {
                         await navigator.clipboard.writeText(rssUrl);
