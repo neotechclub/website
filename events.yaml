@@ -7,7 +7,7 @@ current_events:
     duration: "1 hour"
     border_color: "amber"
     #signup_url: "https://forms.gle/kickoff-signup"
-    #instructions_url: "/kickoff-instructions.pdf"
+    instructions_url: "https://blog.neotechclub.qzz.io/p/kickoff-session-first-official-meet-instructions/"
   
   - title: "Git Workshop 1 - Intro to Git with Github and Codeberg"
     date: "TBA"
@@ -16,7 +16,7 @@ current_events:
     duration: "1 hour"
     border_color: "cyan"
     #signup_url: "https://forms.gle/git-signup"
-    #instructions_url: "/git-workshop-guide.pdf"
+    instructions_url: "https://blog.neotechclub.qzz.io/p/git-workshop-1-intro-to-git-with-github-and-codeberg-instructions/"
 
 past_events:
 #  - title: "Inaugural Meeting"
