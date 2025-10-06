@@ -1,12 +1,12 @@
 # Weekly Schedule
 schedule:
   - title: "Normal Activities"
-    frequency: "Twice weekly"
+    frequency: "Weekly/Biweekly"
     activities:
       - duration: "15 min"
         description: "Club planning"
       - duration: "15 min"
-        description: "Tech news discussion"
+        description: "Tech news and discussion"
       - duration: "30 min"
         description: "Open exploration"
   
