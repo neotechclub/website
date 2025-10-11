@@ -6,13 +6,15 @@ Respects exclusions listed in donotbuild.yaml
 """
 
 import os
+import re
+import io
 import json
 import yaml
 import shutil
-import re
+import fnmatch
+from datetime import datetime
 from pathlib import Path
 from html.parser import HTMLParser
-import io
 
 
 class HTMLMinifier(HTMLParser):
@@ -130,28 +132,70 @@ def minify_js(js_content):
     return js
 
 
+def parse_event_date(date_str):
+    """Parse various date formats and return datetime object or None"""
+    if not date_str or date_str.upper() == 'TBA':
+        return None
+    
+    # Try ISO format first (YYYY-MM-DD)
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d')
+    except ValueError:
+        pass
+    
+    # Try formats like "10 October 2025" or "10 Oct 2025"
+    for fmt in ['%d %B %Y', '%d %b %Y']:
+        try:
+            # Extract just the date part before comma if present
+            date_part = date_str.split(',')[0].strip()
+            return datetime.strptime(date_part, fmt)
+        except ValueError:
+            continue
+    
+    return None
+
 def convert_yaml_to_json(yaml_file, output_dir):
     """Convert YAML file to JSON and sort events by date"""
     try:
         with open(yaml_file, 'r') as f:
             data = yaml.safe_load(f)
         
-        # If this is events.yaml, sort past_events by date (newest first)
-        if 'past_events' in data and isinstance(data['past_events'], list):
-            data['past_events'].sort(
-                key=lambda x: x.get('date', '1970-01-01'),
-                reverse=True
-            )
+        # If this is events.yaml, categorize and sort events by date
+        if 'current_events' in data or 'past_events' in data:
+            current_events = data.get('current_events', []) or []
+            past_events = data.get('past_events', []) or []
+            
+            # Combine and re-categorize based on date
+            all_events = current_events + past_events
+            new_current = []
+            new_past = []
+            today = datetime.now().date()
+            
+            for event in all_events:
+                event_date = parse_event_date(event.get('date', ''))
+                if event_date and event_date.date() < today:
+                    new_past.append(event)
+                else:
+                    # Keep as current if no date, TBA, or future date
+                    new_current.append(event)
+            
+            # Sort past events by date (newest first)
+            def get_event_date(event):
+                date_obj = parse_event_date(event.get('date', ''))
+                return date_obj if date_obj else datetime.min
+            
+            new_past.sort(key=get_event_date, reverse=True)
+            
+            data['current_events'] = new_current
+            data['past_events'] = new_past
         
-        json_file = os.path.join(output_dir, Path(yaml_file).stem + '.json')
-        with open(json_file, 'w') as f:
+        # Write JSON output
+        output_file = os.path.join(output_dir, os.path.splitext(os.path.basename(yaml_file))[0] + '.json')
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        
-        print(f"✓ Converted {yaml_file} → {json_file}")
-        return True
+        print(f"✓ Converted: {yaml_file} → {output_file}")
     except Exception as e:
         print(f"✗ Failed to convert {yaml_file}: {e}")
-        return False
 
 
 def process_file(file_path, output_dir, exclusions):

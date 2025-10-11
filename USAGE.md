@@ -71,13 +71,15 @@ Edit `events.yaml`:
 ```yaml
 current_events:
   - title: "Your Event Name"
-    date: "TBA"  # or YYYY-MM-DD
+    date: "10 October 2025, Friday Meet(1st Hour)"  # Flexible format - any text works!
+    # OR use ISO format: "2025-10-10"
+    # OR use: "TBA" / "Coming Soon" / etc.
     description: "Event description"
     location: "Lab"
     duration: "1 hour"
-    border_color: "amber"  # or "cyan", "green"
-    signup_url: "https://forms.gle/your-form"
-    instructions_url: "/your-instructions.pdf"
+    border_color: "amber"  # or "cyan", "green", or any hex like "#ff0000"
+    signup_url: "https://forms.gle/your-form"  # Optional
+    instructions_url: "/your-instructions.pdf"  # Optional
 
 past_events:
   - title: "Past Event"
@@ -85,6 +87,22 @@ past_events:
     description: "What happened"
     location: "Lab"
 ```
+
+**Date Format Notes:**
+- `current_events`: Any text format works - "10 Oct 2025", "Next Friday", "TBA", etc.
+- `past_events`: Use YYYY-MM-DD for proper sorting (newest first)
+- If `date` is missing or empty, shows "TBA"
+- **Automatic categorization**: Events are automatically moved to `past_events` when their date passes (both at build time and runtime)
+
+**Supported Date Formats for Auto-categorization:**
+- ISO format: `2025-10-10` or `2025-10-10, Event details`
+- Long format: `10 October 2025` or `10 October 2025, Event details`
+- Short format: `10 Oct 2025` or `10 Oct 2025, Event details`
+- Special: `TBA` or empty dates are always kept as current events
+
+**Border Colors:**
+- Use color names: `amber`, `cyan`, `green`
+- Or hex codes: `#ffb86c`, `#8be9fd`, `#00ff41`
 
 ### Updating Schedule
 
@@ -137,9 +155,12 @@ cp -r out/* /var/www/html/
 - NO GitHub or Matrix links
 
 ### Events
-- Current events: Shows latest 3 at runtime
-- Each event has signup & instructions links
-- Past events: Separate page, sorted by date (newest first)
+- **Current events**: Shows latest 3 at runtime, automatically filters out past events
+- **Past events**: Separate page, sorted by date (newest first)
+- **Auto-categorization**: Events automatically move from current to past when their date passes
+- Each event has optional signup & instructions links
+- Optional fields: `signup_url`, `instructions_url`
+- Dates are parsed and checked at both build time and runtime
 
 ### Schedule
 - Weekly rhythm only

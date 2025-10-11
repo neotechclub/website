@@ -229,7 +229,20 @@
                 
                 if (data.past_events && data.past_events.length > 0) {
                     // Events are already sorted by build.py (newest first)
-                    container.innerHTML = data.past_events.map(event => `
+                    container.innerHTML = data.past_events.map(event => {
+                        const linksHTML = [];
+                        if (event.signup_url) {
+                            linksHTML.push(`<a href="${event.signup_url}" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                <i class="bi bi-box-arrow-up-right"></i> Signup
+                            </a>`);
+                        }
+                        if (event.instructions_url) {
+                            linksHTML.push(`<a href="${event.instructions_url}" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
+                                <i class="bi bi-file-text"></i> Instructions
+                            </a>`);
+                        }
+                        
+                        return `
                         <div class="terminal-card p-6 event-card border-l-4 border-terminal-gray">
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="text-xl font-bold text-terminal-green">${event.title}</h3>
@@ -238,12 +251,14 @@
                             <p class="text-terminal-cyan text-sm mb-4">
                                 ${event.description}
                             </p>
-                            <div class="flex gap-4 text-xs text-terminal-gray">
+                            <div class="flex gap-4 text-xs text-terminal-gray mb-3">
                                 <span><i class="bi bi-geo-alt"></i> ${event.location || 'TBA'}</span>
                                 ${event.duration ? `<span><i class="bi bi-clock"></i> ${event.duration}</span>` : ''}
                             </div>
+                            ${linksHTML.length > 0 ? `<div class="flex gap-2 flex-wrap">${linksHTML.join('')}</div>` : ''}
                         </div>
-                    `).join('') + `
+                    `;
+                    }).join('') + `
                         <div class="text-center pt-6 text-terminal-gray text-sm">
                             More events will appear here as we continue building and learning together.
                         </div>

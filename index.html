@@ -576,49 +576,9 @@
                     </h2>
                     
                     <div class="space-y-4" id="currentEventsContainer">
-                        <!-- Sample event - would be loaded from upcoming.yaml -->
-                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-amber">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-xl font-bold text-terminal-green">Kickoff Session</h3>
-                                <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">TBA</span>
-                            </div>
-                            <p class="text-terminal-cyan text-sm mb-4">
-                                First official meet. Introductions, club vision, and initial project brainstorming. Bring your laptops and ideas.
-                            </p>
-                            <div class="flex gap-4 text-xs text-terminal-gray mb-3">
-                                <span><i class="bi bi-geo-alt"></i> Lab</span>
-                                <span><i class="bi bi-clock"></i> 1 hour</span>
-                            </div>
-                            <div class="flex gap-2 flex-wrap">
-                                <a href="https://forms.gle/kickoff-signup" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
-                                    <i class="bi bi-box-arrow-up-right"></i> Signup
-                                </a>
-                                <a href="/kickoff-instructions.pdf" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
-                                    <i class="bi bi-file-text"></i> Instructions
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="terminal-card p-6 event-card border-l-4 border-terminal-cyan">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-xl font-bold text-terminal-green">Git Workshop</h3>
-                                <span class="text-xs text-terminal-gray bg-terminal-charcoal px-3 py-1 rounded">TBA</span>
-                            </div>
-                            <p class="text-terminal-cyan text-sm mb-4">
-                                Version control essentials. From clone to pull request, we'll cover collaborative development workflows.
-                            </p>
-                            <div class="flex gap-4 text-xs text-terminal-gray mb-3">
-                                <span><i class="bi bi-geo-alt"></i> Lab</span>
-                                <span><i class="bi bi-clock"></i> 1.5 hours</span>
-                            </div>
-                            <div class="flex gap-2 flex-wrap">
-                                <a href="https://forms.gle/git-signup" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
-                                    <i class="bi bi-box-arrow-up-right"></i> Signup
-                                </a>
-                                <a href="/git-workshop-guide.pdf" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">
-                                    <i class="bi bi-file-text"></i> Instructions
-                                </a>
-                            </div>
+                        <!-- Events loaded dynamically from events.json -->
+                        <div class="text-center text-terminal-gray text-sm py-8">
+                            <i class="bi bi-hourglass-split"></i> Loading events...
                         </div>
 
                         <div class="text-center pt-6 border-t border-terminal-gray mt-8">
@@ -740,6 +700,8 @@
                             </p>
                             <span class="inline-flex items-center gap-2 text-terminal-gray">
                                 <i class="bi bi-building"></i> Computer Lab, GCC
+                                <i class="bi bi-building"></i> Room 202, GCC
+
                             </span>
                         </div>
 
@@ -812,16 +774,46 @@
             loadSchedule();
         });
 
+        // Parse event date from various formats
+        function parseEventDate(dateStr) {
+            if (!dateStr || dateStr.toUpperCase() === 'TBA') return null;
+            
+            // Try ISO format (YYYY-MM-DD)
+            let match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                return new Date(match[1], match[2] - 1, match[3]);
+            }
+            
+            // Try formats like "10 October 2025" or "10 Oct 2025"
+            const datePart = dateStr.split(',')[0].trim();
+            const parsed = new Date(datePart);
+            if (!isNaN(parsed.getTime())) {
+                return parsed;
+            }
+            
+            return null;
+        }
+
         // Load events from JSON (generated at build time from YAML)
-        // Only show latest 3 current events at runtime
+        // Only show latest 3 current events at runtime (and filter out past events)
         async function loadEvents() {
             try {
                 const response = await fetch('/events.json');
                 if (response.ok) {
                     const data = await response.json();
                     if (data.current_events && data.current_events.length > 0) {
+                        // Filter out past events at runtime
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        const futureEvents = data.current_events.filter(event => {
+                            const eventDate = parseEventDate(event.date);
+                            // Keep if no date, TBA, or future/today
+                            return !eventDate || eventDate >= today;
+                        });
+                        
                         // Show only the latest 3 events
-                        const latest3 = data.current_events.slice(0, 3);
+                        const latest3 = futureEvents.slice(0, 3);
                         const container = document.getElementById('currentEventsContainer');
                         
                         // Render events dynamically
