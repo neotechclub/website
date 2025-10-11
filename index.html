@@ -60,9 +60,15 @@
             background: #0a0e0f;
             color: #00ff41;
             overflow-x: hidden;
+            width: 100%;
+            position: relative;
         }
 
         /* Prevent horizontal overflow */
+        * {
+            box-sizing: border-box;
+        }
+
         .max-w-5xl,
         .max-w-7xl {
             max-width: 100%;
@@ -389,6 +395,27 @@
                 justify-content: center;
                 width: 100%;
             }
+
+            /* Fix card overflow on mobile */
+            section {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .terminal-card {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .p-8 {
+                padding: 1.5rem;
+            }
+            
+            /* Override for team section to prevent overflow */
+            #team .p-8 {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
         }
 
         /* Extra small devices (Galaxy S20, A11, etc.) */
@@ -406,6 +433,21 @@
             .hero-text {
                 font-size: 1.75rem;
             }
+
+            section {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .p-8 {
+                padding: 1rem;
+            }
+            
+            /* Override for team section to prevent overflow */
+            #team .p-8 {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
         }
 
         /* Team grid styles */
@@ -413,7 +455,9 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
-            padding: 1rem 0;
+            padding: 0;
+            margin: 0;
+            width: 100%;
         }
 
         @media (max-width: 400px) {
@@ -831,12 +875,12 @@
                 <div class="terminal-header">
                     ~/team.json
                 </div>
-                <div class="p-8">
-                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                <div class="p-8" style="padding-left: 0; padding-right: 0;">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8" style="padding-left: 2rem; padding-right: 2rem;">
                         <span class="text-terminal-green">$</span> Meet the Team
                     </h2>
                     
-                    <div class="team-grid" id="teamGrid">
+                    <div class="team-grid" id="teamGrid" style="padding-left: 2rem; padding-right: 2rem;">
                         <!-- Team members loaded dynamically from team.json -->
                         <div class="text-center text-terminal-gray text-sm py-8">
                             <i class="bi bi-hourglass-split"></i> Loading team...
