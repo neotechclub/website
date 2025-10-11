@@ -797,6 +797,8 @@
         // Load events from JSON (generated at build time from YAML)
         // Show all current events at runtime (and filter out past events)
         async function loadEvents() {
+            const container = document.getElementById('currentEventsContainer');
+            
             try {
                 const response = await fetch('/events.json');
                 if (response.ok) {
@@ -811,8 +813,6 @@
                             // Keep if no date, TBA, or future/today
                             return !eventDate || eventDate >= today;
                         });
-                        
-                        const container = document.getElementById('currentEventsContainer');
                         
                         // If no future events, show no events message
                         if (futureEvents.length === 0) {
@@ -872,10 +872,34 @@
                                 </a>
                             </div>
                         `;
+                    } else {
+                        // No events in JSON at all
+                        container.innerHTML = `
+                            <div class="text-center text-terminal-gray text-sm py-8">
+                                <i class="bi bi-inbox"></i>  No events are currently running... More will appear here soon. Stay tuned!
+                            </div>
+                            <div class="text-center pt-6 border-t border-terminal-gray mt-8">
+                                <a href="/past-events.html" class="btn-terminal inline-block">
+                                    <span class="relative z-10"><i class="bi bi-clock-history"></i> View Past Events</span>
+                                </a>
+                            </div>
+                        `;
                     }
+                } else {
+                    throw new Error('Failed to load events');
                 }
             } catch (e) {
-                console.log('Events JSON not found, using static content');
+                console.error('Events JSON not found:', e);
+                container.innerHTML = `
+                    <div class="text-center text-terminal-gray text-sm py-8">
+                        <i class="bi bi-inbox"></i>  More events will appear here soon. Stay tuned! 
+                    </div>
+                    <div class="text-center pt-6 border-t border-terminal-gray mt-8">
+                        <a href="/past-events.html" class="btn-terminal inline-block">
+                            <span class="relative z-10"><i class="bi bi-clock-history"></i> View Past Events</span>
+                        </a>
+                    </div>
+                `;
             }
         }
 
