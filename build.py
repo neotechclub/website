@@ -25,6 +25,10 @@ class HTMLMinifier(HTMLParser):
         self.in_pre = False
         self.in_script = False
         self.in_style = False
+    
+    def handle_decl(self, decl):
+        """Preserve DOCTYPE declaration"""
+        self.output.write(f'<!{decl}>')
         
     def handle_starttag(self, tag, attrs):
         if tag == 'pre':
