@@ -230,7 +230,7 @@ cp -r out/* /var/www/html/
 
 ### Blog
 - Links to `/blog` (external)
-- RSS copy button: `https://neotechclub.qzz.io/blog/post/index.xml`
+- RSS copy button: `https://blog.neotechclub.qzz.io/post/index.xml`
 
 ### Events RSS Feeds
 - **Current events**: `https://neotechclub.qzz.io/events/index.xml` (also at `/events/current/index.xml`)
