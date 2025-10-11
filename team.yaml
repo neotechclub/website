@@ -1,0 +1,31 @@
+team:
+  - name: "Joel Paul"
+    alternative_name: "jackpots30"
+    role: 
+      - "Co-Lead & Club Coordinator"
+    interests: "???"
+    profile_pic: "https://avatars.githubusercontent.com/u/142168122?v=4"
+    links:
+      - url: "https://jack-pots.github.io"
+        type: "website"
+      - url: "https://github.com/jack-pots"
+        type: "github"
+      - url: "https://www.linkedin.com/in/jack-pots/"
+        type: "linkedin"
+      - url: "https://discuss.systems/@jackpots"
+        type: "mastodon"
+  - name: "Souhrud Reddy"
+    alternative_name: "sounddrill"
+    role: 
+      - "Co-Lead"
+    interests: "Linux, Open Source, Electronics"
+    profile_pic: "https://avatars.githubusercontent.com/u/84176052?v=4"
+    links:
+      - url: "https://sounddrill31.github.io"
+        type: "website"
+      - url: "https://github.com/sounddrill31"
+        type: "github"
+      - url: "https://www.linkedin.com/in/souhrud-reddy/"
+        type: "linkedin"
+      - url: "https://infosec.exchange/@sounddrill"
+        type: "mastodon"

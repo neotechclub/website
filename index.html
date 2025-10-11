@@ -369,6 +369,73 @@
                 width: 100%;
             }
         }
+
+        /* Team grid styles */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+
+        @media (min-width: 640px) {
+            .team-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .team-grid {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            }
+        }
+
+        .team-card {
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 255, 65, 0.25);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #00ff41;
+            object-fit: cover;
+            transition: all 0.3s ease;
+            background: #282a36;
+        }
+
+        .team-card:hover .team-avatar {
+            border-color: #ffb86c;
+            box-shadow: 0 0 20px rgba(255, 184, 108, 0.4);
+        }
+
+        .team-social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #44475a;
+            color: #8be9fd;
+            transition: all 0.3s ease;
+        }
+
+        .team-social-link:hover {
+            border-color: #00ff41;
+            color: #ffb86c;
+            background: rgba(0, 255, 65, 0.1);
+            transform: scale(1.1);
+        }
+
+        .team-social-link::after {
+            display: none;
+        }
     </style>
 </head>
 <body class="relative">
@@ -390,6 +457,7 @@
                 <a href="#events">events</a>
                 <a href="#blog">blog</a>
                 <a href="#contact">contact</a>
+                <a href="#team">team</a>
             </div>
         </div>
     </nav>
@@ -711,6 +779,29 @@
         </div>
     </section>
 
+    <!-- Meet the Team Section -->
+    <section id="team" class="relative py-24 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="terminal-card p-8">
+                <div class="terminal-header">
+                    ~/team.json
+                </div>
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-terminal-amber mb-8">
+                        <span class="text-terminal-green">$</span> Meet the Team
+                    </h2>
+                    
+                    <div class="team-grid" id="teamGrid">
+                        <!-- Team members loaded dynamically from team.json -->
+                        <div class="text-center text-terminal-gray text-sm py-8">
+                            <i class="bi bi-hourglass-split"></i> Loading team...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="relative py-12 px-6 border-t border-terminal-gray">
         <div class="max-w-5xl mx-auto">
@@ -772,6 +863,7 @@
             // Load events and schedule
             loadEvents();
             loadSchedule();
+            loadTeam();
         });
 
         // Parse event date from various formats
@@ -948,6 +1040,113 @@
                 container.innerHTML = `
                     <div class="text-center text-terminal-amber text-sm py-8 col-span-3">
                         <i class="bi bi-exclamation-triangle"></i> Failed to load schedule.
+                    </div>
+                `;
+            }
+        }
+
+        // Get icon class for social link type
+        function getSocialIcon(type) {
+            const icons = {
+                'github': 'bi-github',
+                'codeberg': 'bi-git',
+                'website': 'bi-globe2',
+                'linkedin': 'bi-linkedin',
+                'mastodon': 'bi-mastodon',
+                'twitter': 'bi-twitter-x',
+                'email': 'bi-envelope-at'
+            };
+            return icons[type] || 'bi-link-45deg';
+        }
+
+        // Load team from JSON (generated at build time from YAML)
+        async function loadTeam() {
+            try {
+                const response = await fetch('/team.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load team');
+                }
+                
+                const data = await response.json();
+                const container = document.getElementById('teamGrid');
+                
+                if (data.team && data.team.length > 0) {
+                    container.innerHTML = data.team.map(member => {
+                        // Build social links
+                        const socialLinks = member.links ? member.links.map(link => {
+                            const icon = getSocialIcon(link.type);
+                            return `
+                                <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+                                   class="team-social-link" title="${link.type}">
+                                    <i class="bi ${icon}"></i>
+                                </a>
+                            `;
+                        }).join('') : '';
+
+                        // Build roles display
+                        const roles = Array.isArray(member.role) ? member.role.join(', ') : member.role;
+
+                        return `
+                            <div class="team-card terminal-card p-6">
+                                <div class="flex flex-col items-center text-center">
+                                    <img 
+                                        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect fill='%23282a36' width='120' height='120'/%3E%3C/svg%3E" 
+                                        data-src="${member.profile_pic}" 
+                                        alt="${member.name}"
+                                        class="team-avatar mb-4 lazy-load"
+                                        loading="lazy"
+                                    />
+                                    <h3 class="text-xl font-bold text-terminal-green mb-1">
+                                        ${member.name}
+                                    </h3>
+                                    ${member.alternative_name ? `
+                                        <p class="text-sm text-terminal-cyan mb-2 italic">
+                                            @${member.alternative_name}
+                                        </p>
+                                    ` : ''}
+                                    <div class="text-sm text-terminal-amber mb-3">
+                                        ${roles}
+                                    </div>
+                                    ${member.interests ? `
+                                        <p class="text-xs text-terminal-gray mb-4 leading-relaxed">
+                                            ${member.interests}
+                                        </p>
+                                    ` : ''}
+                                    <div class="flex gap-2 flex-wrap justify-center">
+                                        ${socialLinks}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Implement lazy loading for images
+                    const lazyImages = container.querySelectorAll('.lazy-load');
+                    const imageObserver = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                img.src = img.dataset.src;
+                                img.classList.remove('lazy-load');
+                                observer.unobserve(img);
+                            }
+                        });
+                    });
+
+                    lazyImages.forEach(img => imageObserver.observe(img));
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center text-terminal-gray text-sm py-8">
+                            <i class="bi bi-inbox"></i> Team members will be listed here soon.
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Failed to load team:', e);
+                const container = document.getElementById('teamGrid');
+                container.innerHTML = `
+                    <div class="text-center text-terminal-amber text-sm py-8">
+                        <i class="bi bi-exclamation-triangle"></i> Failed to load team.
                     </div>
                 `;
             }

@@ -267,7 +267,7 @@ def build_site():
     
     # Convert YAML files to JSON
     print("\n📄 Converting YAML to JSON...")
-    yaml_files = ['schedule.yaml', 'events.yaml']
+    yaml_files = ['schedule.yaml', 'events.yaml', 'team.yaml']
     
     for yaml_file in yaml_files:
         if os.path.exists(yaml_file):

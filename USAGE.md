@@ -53,13 +53,15 @@ website/
 ├── past-events.html        # Past events page
 ├── events.yaml             # Event data (with dates, signup URLs)
 ├── schedule.yaml           # Weekly schedule data
+├── team.yaml               # Team member profiles
 ├── build.py                # Build script
 ├── donotbuild.yaml         # Build exclusions config
 └── out/                    # Generated output (deploy this!)
     ├── index.html          # Minified
     ├── past-events.html    # Minified
     ├── events.json         # Sorted by date
-    └── schedule.json       # Clean schedule data
+    ├── schedule.json       # Clean schedule data
+    └── team.json           # Team member data
 ```
 
 ## Editing Content
@@ -119,6 +121,48 @@ schedule:
 
 **Note**: Schedule does NOT have signup/instructions URLs. Those are only for events.
 
+### Managing Team Members
+
+Edit `team.yaml`:
+
+```yaml
+team:
+  - name: "Full Name"
+    alternative_name: "username"  # Optional - handle/nickname
+    role: 
+      - "Co-Lead"
+      - "Developer"  # Can have multiple roles
+    interests: "Cybersecurity, Open Source, etc."
+    profile_pic: "https://avatars.githubusercontent.com/u/12345?v=4"
+    links:
+      - url: "https://yoursite.com"
+        type: "website"  # Auto-detects icon
+      - url: "https://github.com/username"
+        type: "github"
+      - url: "https://codeberg.org/username"
+        type: "codeberg"
+      - url: "https://linkedin.com/in/username"
+        type: "linkedin"
+      - url: "https://mastodon.social/@username"
+        type: "mastodon"
+```
+
+**Supported Link Types:**
+- `website` - Personal site/portfolio (globe icon)
+- `github` - GitHub profile
+- `codeberg` - Codeberg profile (git icon)
+- `linkedin` - LinkedIn profile
+- `mastodon` - Mastodon profile
+- `twitter` - Twitter/X profile
+- `email` - Email address
+
+**Features:**
+- Responsive grid layout (automatically adjusts to screen size)
+- Always shows at least 2 members per row on larger screens
+- Profile pictures are lazy-loaded for performance
+- Hover effects on cards and avatars
+- Professional, minimal design
+
 ## Build Process
 
 The build script (`build.py`) automatically:
@@ -126,6 +170,7 @@ The build script (`build.py`) automatically:
 1. **Converts YAML to JSON**
    - `events.yaml` → `events.json` (past events sorted newest first)
    - `schedule.yaml` → `schedule.json`
+   - `team.yaml` → `team.json`
 
 2. **Minifies Files**
    - HTML files (removes whitespace, preserves `<pre>` tags)
@@ -177,6 +222,14 @@ cp -r out/* /var/www/html/
 ### Join Section
 - Temporary Member vs Full Member
 - Google Forms apology with degoogle option
+
+### Team Section
+- Responsive grid layout with automatic line justification
+- Lazy-loaded profile images for performance
+- Auto-detected social media icons (GitHub, Codeberg, LinkedIn, Mastodon, etc.)
+- Smooth hover effects and animations
+- Professional, minimal design
+- Always shows at least 2 members per row
 
 ## Troubleshooting
 
