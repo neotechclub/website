@@ -795,7 +795,7 @@
         }
 
         // Load events from JSON (generated at build time from YAML)
-        // Only show latest 3 current events at runtime (and filter out past events)
+        // Show all current events at runtime (and filter out past events)
         async function loadEvents() {
             try {
                 const response = await fetch('/events.json');
@@ -812,12 +812,25 @@
                             return !eventDate || eventDate >= today;
                         });
                         
-                        // Show only the latest 3 events
-                        const latest3 = futureEvents.slice(0, 3);
                         const container = document.getElementById('currentEventsContainer');
                         
-                        // Render events dynamically
-                        const eventsHTML = latest3.map(event => {
+                        // If no future events, show no events message
+                        if (futureEvents.length === 0) {
+                            container.innerHTML = `
+                                <div class="text-center text-terminal-gray text-sm py-8">
+                                    <i class="bi bi-inbox"></i> No events are currently running...
+                                </div>
+                                <div class="text-center pt-6 border-t border-terminal-gray mt-8">
+                                    <a href="/past-events.html" class="btn-terminal inline-block">
+                                        <span class="relative z-10"><i class="bi bi-clock-history"></i> View Past Events</span>
+                                    </a>
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        // Render all current/future all current/future events dynamically
+                        const eventsHTML = futureEvents.map(event => {
                             const linksHTML = [];
                             if (event.signup_url) {
                                 linksHTML.push(`<a href="${event.signup_url}" target="_blank" class="text-xs text-terminal-cyan hover:text-terminal-amber">

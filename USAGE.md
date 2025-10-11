@@ -155,7 +155,7 @@ cp -r out/* /var/www/html/
 - NO GitHub or Matrix links
 
 ### Events
-- **Current events**: Shows latest 3 at runtime, automatically filters out past events
+- **Current events**: Shows all ongoing/future events at runtime, automatically filters out past events
 - **Past events**: Separate page, sorted by date (newest first)
 - **Auto-categorization**: Events automatically move from current to past when their date passes
 - Each event has optional signup & instructions links
