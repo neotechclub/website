@@ -61,7 +61,13 @@ website/
     ├── past-events.html    # Minified
     ├── events.json         # Sorted by date
     ├── schedule.json       # Clean schedule data
-    └── team.json           # Team member data
+    ├── team.json           # Team member data
+    └── events/
+        ├── index.xml       # Current events RSS feed
+        ├── current/
+        │   └── index.xml   # Current events RSS (alternative URL)
+        └── past/
+            └── index.xml   # Past events RSS feed
 ```
 
 ## Editing Content
@@ -172,12 +178,19 @@ The build script (`build.py`) automatically:
    - `schedule.yaml` → `schedule.json`
    - `team.yaml` → `team.json`
 
-2. **Minifies Files**
+2. **Generates RSS Feeds**
+   - `events/index.xml` - Current events RSS feed (always generated)
+   - `events/current/index.xml` - Copy of current events feed (alternative URL)
+   - `events/past/index.xml` - Past events RSS feed
+   - All feeds are RSS 2.0 format with full event details
+   - Automatically includes event description, location, duration, date, signup/instructions links
+
+3. **Minifies Files**
    - HTML files (removes whitespace, preserves `<pre>` tags)
    - CSS files (removes comments, whitespace)
    - JS files (removes comments, extra whitespace)
 
-3. **Respects Exclusions**
+4. **Respects Exclusions**
    - Skips files listed in `donotbuild.yaml`
    - Default exclusions: `*.yaml`, `*.yml`, `build.py`, etc.
 
@@ -218,6 +231,16 @@ cp -r out/* /var/www/html/
 ### Blog
 - Links to `/blog` (external)
 - RSS copy button: `https://neotechclub.qzz.io/blog/post/index.xml`
+
+### Events RSS Feeds
+- **Current events**: `https://neotechclub.qzz.io/events/index.xml` (also at `/events/current/index.xml`)
+- **Past events**: `https://neotechclub.qzz.io/events/past/index.xml`
+- RSS 2.0 format with full event details (description, location, duration, date, links)
+- Automatically generated during build from `events.yaml`
+- Subscribe in your RSS reader to stay updated on club events
+- Feeds include optional signup and instructions URLs when available
+- Past events feed shows newest events first
+- Main feed (`events/index.xml`) is always generated, even if no current events exist
 
 ### Join Section
 - Temporary Member vs Full Member

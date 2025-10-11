@@ -2,6 +2,7 @@
 """
 NeoTech Club Website Build Script
 Converts YAML to JSON, minifies HTML/CSS/JS, and outputs to out/ folder.
+Generates RSS feeds for current and past events.
 Respects exclusions listed in donotbuild.yaml
 """
 
@@ -15,6 +16,7 @@ import fnmatch
 from datetime import datetime
 from pathlib import Path
 from html.parser import HTMLParser
+from xml.sax.saxutils import escape
 
 
 class HTMLMinifier(HTMLParser):
@@ -158,6 +160,79 @@ def parse_event_date(date_str):
     
     return None
 
+
+def generate_rss_feed(events, title, description, link, output_file):
+    """Generate RSS 2.0 feed for events"""
+    rss_items = []
+    
+    for event in events:
+        event_title = escape(event.get('title', 'Untitled Event'))
+        event_desc = escape(event.get('description', ''))
+        event_location = escape(event.get('location', 'TBD'))
+        event_duration = escape(event.get('duration', ''))
+        event_date_str = event.get('date', 'TBD')
+        
+        # Parse date for pubDate
+        event_date = parse_event_date(event_date_str)
+        if event_date:
+            pub_date = event_date.strftime('%a, %d %b %Y 00:00:00 +0000')
+        else:
+            pub_date = datetime.now().strftime('%a, %d %b %Y 00:00:00 +0000')
+        
+        # Build full description with all details
+        full_description = f"{event_desc}"
+        if event_location:
+            full_description += f"<br/><br/><strong>Location:</strong> {event_location}"
+        if event_duration:
+            full_description += f"<br/><strong>Duration:</strong> {event_duration}"
+        if event_date_str:
+            full_description += f"<br/><strong>Date:</strong> {escape(event_date_str)}"
+        
+        # Add optional links
+        if event.get('signup_url'):
+            signup_url = escape(event['signup_url'])
+            full_description += f'<br/><br/><a href="{signup_url}">Sign Up Here</a>'
+        if event.get('instructions_url'):
+            instructions_url = escape(event['instructions_url'])
+            full_description += f'<br/><a href="{instructions_url}">View Instructions</a>'
+        
+        # Create unique GUID (using title + date as unique identifier)
+        guid = f"{link}/#{event_title.replace(' ', '-').lower()}-{event_date_str}"
+        
+        rss_item = f"""    <item>
+      <title>{event_title}</title>
+      <description><![CDATA[{full_description}]]></description>
+      <pubDate>{pub_date}</pubDate>
+      <link>{link}</link>
+      <guid isPermaLink="false">{guid}</guid>
+    </item>"""
+        rss_items.append(rss_item)
+    
+    # Build complete RSS feed
+    last_build_date = datetime.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
+    
+    rss_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{escape(title)}</title>
+    <description>{escape(description)}</description>
+    <link>{link}</link>
+    <atom:link href="{link}/events/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <lastBuildDate>{last_build_date}</lastBuildDate>
+{chr(10).join(rss_items)}
+  </channel>
+</rss>
+"""
+    
+    # Write RSS feed
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(rss_content)
+    
+    print(f"✓ Generated RSS: {output_file}")
+    return output_file
+
 def convert_yaml_to_json(yaml_file, output_dir):
     """Convert YAML file to JSON and sort events by date"""
     try:
@@ -192,6 +267,35 @@ def convert_yaml_to_json(yaml_file, output_dir):
             
             data['current_events'] = new_current
             data['past_events'] = new_past
+            
+            # Generate RSS feeds for events
+            base_url = "https://neotechclub.qzz.io"
+            
+            # Always generate events/index.xml (main feed) - use current events if available, otherwise empty
+            events_rss = os.path.join(output_dir, 'events', 'index.xml')
+            generate_rss_feed(
+                new_current,
+                "NeoTech Club - Current Events",
+                "Upcoming events and activities at NeoTech Club @ GCC",
+                base_url,
+                events_rss
+            )
+            
+            # Copy to events/current/index.xml as well
+            current_rss = os.path.join(output_dir, 'events', 'current', 'index.xml')
+            os.makedirs(os.path.dirname(current_rss), exist_ok=True)
+            shutil.copy2(events_rss, current_rss)
+            print(f"✓ Copied RSS: {current_rss}")
+            
+            # Past events RSS at events/past/index.xml
+            past_rss = os.path.join(output_dir, 'events', 'past', 'index.xml')
+            generate_rss_feed(
+                new_past,
+                "NeoTech Club - Past Events",
+                "Archive of past events and activities at NeoTech Club @ GCC",
+                base_url,
+                past_rss
+            )
         
         # Write JSON output
         output_file = os.path.join(output_dir, os.path.splitext(os.path.basename(yaml_file))[0] + '.json')
