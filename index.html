@@ -988,14 +988,11 @@
                         // Filter out past events at runtime
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-
+                        
                         const futureEvents = data.current_events.filter(event => {
                             const eventDate = parseEventDate(event.date);
-                            // Show if no date, TBA, or event is today or in future
-                            if (!eventDate) return true;
-                            const eventDay = new Date(eventDate);
-                            eventDay.setHours(0, 0, 0, 0);
-                            return eventDay.getTime() === today.getTime() || eventDay > today;
+                            // Keep if no date, TBA, or future/today
+                            return !eventDate || eventDate >= today;
                         });
                         
                         // If no future events, show no events message
