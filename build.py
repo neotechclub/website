@@ -13,7 +13,13 @@ import json
 import yaml
 import shutil
 import fnmatch
-from datetime import datetime
+from datetime import datetime, time
+try:
+    # Python 3.9+
+    from zoneinfo import ZoneInfo
+except Exception:
+    # Fallback placeholder; if zoneinfo missing, use UTC-only behavior
+    ZoneInfo = None
 from pathlib import Path
 from html.parser import HTMLParser
 from xml.sax.saxutils import escape
@@ -140,25 +146,101 @@ def minify_js(js_content):
 
 def parse_event_date(date_str):
     """Parse various date formats and return datetime object or None"""
-    if not date_str or date_str.upper() == 'TBA':
+    if not date_str or date_str.strip().upper() == 'TBA':
         return None
-    
+
+    # Extract date part before any comma (e.g., "15 October 2025, Thursday ...")
+    date_part = date_str.split(',')[0].strip()
+
     # Try ISO format first (YYYY-MM-DD)
-    try:
-        return datetime.strptime(date_str, '%Y-%m-%d')
-    except ValueError:
-        pass
-    
-    # Try formats like "10 October 2025" or "10 Oct 2025"
-    for fmt in ['%d %B %Y', '%d %b %Y']:
+    for fmt in ['%Y-%m-%d', '%d %B %Y', '%d %b %Y']:
         try:
-            # Extract just the date part before comma if present
-            date_part = date_str.split(',')[0].strip()
-            return datetime.strptime(date_part, fmt)
+            parsed_date = datetime.strptime(date_part, fmt).date()
+            # Default time is midnight
+            return datetime.combine(parsed_date, time(0, 0))
         except ValueError:
             continue
-    
+
     return None
+
+
+def parse_event_datetime_with_tz(date_str):
+    """Return an aware UTC datetime parsed from a human date string.
+
+    If the input contains a time, try to parse it (e.g. "(1:20PM)" or "1:20PM").
+    If no timezone is present we assume Asia/Kolkata (IST) as requested and
+    return a UTC-converted aware datetime. If parsing fails, return None.
+    """
+    if not date_str or date_str.strip().upper() == 'TBA':
+        return None
+
+    # Base date parsing
+    base_dt = parse_event_date(date_str)
+    if base_dt is None:
+        return None
+
+    # Attempt to extract time like 1:20PM or 01:20 PM
+    time_match = re.search(r'(\d{1,2}:\d{2}\s*[APMapm]{2})', date_str)
+    hour = 0
+    minute = 0
+    if time_match:
+        tstr = time_match.group(1).strip().upper().replace(' ', '')
+        try:
+            # Normalize to HH:MMAM/PM
+            tm = datetime.strptime(tstr, '%I:%M%p')
+            hour = tm.hour
+            minute = tm.minute
+        except Exception:
+            pass
+    else:
+        # Try patterns like "1st Hour" or "2nd Hour" -> treat as hour:00
+        hour_match = re.search(r'(\d{1,2})(?:st|nd|rd|th)?\s*Hour', date_str, flags=re.IGNORECASE)
+        if hour_match:
+            try:
+                hour = int(hour_match.group(1))
+                minute = 0
+            except Exception:
+                hour = 0
+                minute = 0
+
+    # Combine date and time
+    combined = datetime.combine(base_dt.date(), time(hour % 24, minute))
+
+    # If ZoneInfo is available, assume Asia/Kolkata when unspecified
+    try:
+        if ZoneInfo is not None:
+            local_tz = ZoneInfo('Asia/Kolkata')
+            local_dt = combined.replace(tzinfo=local_tz)
+            utc_dt = local_dt.astimezone(ZoneInfo('UTC'))
+            return utc_dt
+        else:
+            # ZoneInfo not available; return naive UTC-like datetime
+            return combined
+    except Exception:
+        # On any failure, return naive datetime (best-effort)
+        return combined
+
+
+def attach_date_utc_to_event(event):
+    """Attach a date_utc (ISO 8601 Z) field to the event dict if parsable."""
+    date_str = event.get('date') or ''
+    dt_utc = parse_event_datetime_with_tz(date_str)
+    if dt_utc is None:
+        event['date_utc'] = None
+    else:
+        # Produce RFC3339-like UTC string with Z
+        try:
+            # If tz-aware, convert to UTC and emit Z
+            if dt_utc.tzinfo is not None:
+                iso = dt_utc.astimezone(ZoneInfo('UTC')).isoformat()
+            else:
+                iso = dt_utc.isoformat()
+            # Normalize +00:00 to Z
+            if iso.endswith('+00:00'):
+                iso = iso.replace('+00:00', 'Z')
+            event['date_utc'] = iso
+        except Exception:
+            event['date_utc'] = dt_utc.isoformat()
 
 
 def generate_rss_feed(events, title, description, link, output_file):
@@ -171,13 +253,19 @@ def generate_rss_feed(events, title, description, link, output_file):
         event_location = escape(event.get('location', 'TBD'))
         event_duration = escape(event.get('duration', ''))
         event_date_str = event.get('date', 'TBD')
-        
-        # Parse date for pubDate
-        event_date = parse_event_date(event_date_str)
-        if event_date:
-            pub_date = event_date.strftime('%a, %d %b %Y 00:00:00 +0000')
+
+        # Prefer using date_utc if present for pubDate
+        event_date_utc = event.get('date_utc')
+        pub_date = None
+        if event_date_utc:
+            try:
+                # parse ISO format, fallback to now
+                pub_dt = datetime.fromisoformat(event_date_utc.replace('Z', '+00:00'))
+                pub_date = pub_dt.strftime('%a, %d %b %Y %H:%M:%S +0000')
+            except Exception:
+                pub_date = datetime.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
         else:
-            pub_date = datetime.now().strftime('%a, %d %b %Y 00:00:00 +0000')
+            pub_date = datetime.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
         
         # Build full description with all details
         full_description = f"{event_desc}"
@@ -195,10 +283,10 @@ def generate_rss_feed(events, title, description, link, output_file):
         if event.get('instructions_url'):
             instructions_url = escape(event['instructions_url'])
             full_description += f'<br/><a href="{instructions_url}">View Instructions</a>'
-        
-        # Create unique GUID (using title + date as unique identifier)
-        guid = f"{link}/#{event_title.replace(' ', '-').lower()}-{event_date_str}"
-        
+        # Create unique GUID (using title + date_utc or date as unique identifier)
+        guid_id = event.get('date_utc') or event_date_str
+        guid = f"{link}/#{event_title.replace(' ', '-').lower()}-{guid_id}"
+
         rss_item = f"""    <item>
       <title>{event_title}</title>
       <description><![CDATA[{full_description}]]></description>
@@ -243,28 +331,61 @@ def convert_yaml_to_json(yaml_file, output_dir):
         if 'current_events' in data or 'past_events' in data:
             current_events = data.get('current_events', []) or []
             past_events = data.get('past_events', []) or []
-            
+
             # Combine and re-categorize based on date
             all_events = current_events + past_events
             new_current = []
             new_past = []
-            today = datetime.now().date()
-            
+
+            # Attach UTC dates to all events
             for event in all_events:
-                event_date = parse_event_date(event.get('date', ''))
-                if event_date and event_date.date() < today:
-                    new_past.append(event)
+                attach_date_utc_to_event(event)
+
+            # Determine now in UTC
+            if ZoneInfo is not None:
+                now_utc = datetime.now(ZoneInfo('UTC'))
+            else:
+                now_utc = datetime.utcnow()
+
+            for event in all_events:
+                date_utc = event.get('date_utc')
+                if date_utc:
+                    try:
+                        ev_dt = datetime.fromisoformat(date_utc.replace('Z', '+00:00'))
+                        # Compare in UTC
+                        if ev_dt < now_utc:
+                            new_past.append(event)
+                        else:
+                            new_current.append(event)
+                    except Exception:
+                        # If parsing fails, treat as current
+                        new_current.append(event)
                 else:
-                    # Keep as current if no date, TBA, or future date
+                    # No date -> consider current
                     new_current.append(event)
-            
-            # Sort past events by date (newest first)
-            def get_event_date(event):
-                date_obj = parse_event_date(event.get('date', ''))
-                return date_obj if date_obj else datetime.min
-            
-            new_past.sort(key=get_event_date, reverse=True)
-            
+
+            # Sorting: current ascending (earliest first), past descending (newest first)
+            def sort_key_asc(event):
+                d = event.get('date_utc')
+                if not d:
+                    return datetime.max
+                try:
+                    return datetime.fromisoformat(d.replace('Z', '+00:00'))
+                except Exception:
+                    return datetime.max
+
+            def sort_key_desc(event):
+                d = event.get('date_utc')
+                if not d:
+                    return datetime.min
+                try:
+                    return datetime.fromisoformat(d.replace('Z', '+00:00'))
+                except Exception:
+                    return datetime.min
+
+            new_current.sort(key=sort_key_asc)
+            new_past.sort(key=sort_key_desc, reverse=True)
+
             data['current_events'] = new_current
             data['past_events'] = new_past
             
