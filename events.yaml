@@ -1,9 +1,9 @@
 # Events Configuration
 current_events:
   - title: "Open Source and Why Privacy Matters"
-    date: "16 October 2025, Thursday Meet(1:20PM)"
+    date: "17 October 2025, Friday Meet(1:20PM)"
     description: "Exploring OSS, FOSS & Digital Privacy for Everyday People. Bring your laptops and ideas."
-    location: "TBD"
+    location: "Room 202, GCC"
     duration: "1 hr 20 min"
     border_color: "amber"
     #signup_url: "https://forms.gle/kickoff-signup"
